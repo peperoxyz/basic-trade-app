@@ -1,6 +1,7 @@
 package models
 
 import (
+	"basic-trade-app/internal/helpers"
 	"time"
 
 	"github.com/asaskevich/govalidator"
@@ -21,12 +22,19 @@ type Admin struct {
 
 // hook for validation
 func (a *Admin) BeforeCreate(tx *gorm.DB) (err error) {
-	a.UUID = uuid.New().String()
 	_, errCreate := govalidator.ValidateStruct(a)
 
 	if errCreate != nil {
 		err = errCreate
 		return
 	}
+
+	// set uuid
+	a.UUID = uuid.New().String()
+
+	// hash password
+	a.Password = helpers.HashPass(a.Password)
+
+	err = nil
 	return
 }
