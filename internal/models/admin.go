@@ -10,11 +10,11 @@ import (
 )
 
 type Admin struct {
-	ID        uint   `gorm:"primaryKey"`
+	ID        uint   `gorm:"primaryKey" `
 	UUID      string `gorm:"type:varchar(36);uniqueIndex"`
-	Name      string `gorm:"type:varchar(100);not null"`
-	Email     string `gorm:"type:varchar(50);unique;not null"`
-	Password  string `gorm:"not null"`
+	Name      string `gorm:"type:varchar(100);not null" json:"name"`
+	Email     string `gorm:"type:varchar(50);unique;not null" json:"email"`
+	Password  string `gorm:"not null" json:"password"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Products  []Product `gorm:"foreignKey:AdminID"`// for association
