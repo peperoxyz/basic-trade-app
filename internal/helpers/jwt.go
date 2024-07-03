@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"basic-trade-app/config"
 	"errors"
 	"strings"
 	"time"
@@ -9,7 +10,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var secretKey = "your-256-bit-secret"
+var secretKey = config.SecretKey
 
 func GenerateToken(id uint, uuid string, email string) string {
 	claims := jwt.MapClaims {
