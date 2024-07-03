@@ -105,3 +105,68 @@ func DeleteProduct(ctx *gin.Context) {
 		"data": Product,
 	})
 }
+
+func UpdateProduct(ctx *gin.Context) {
+	db := database.GetDB()
+
+	userData := ctx.MustGet("userData").(jwt5.MapClaims) // get userData from decoded jwt
+	contentType := helpers.GetContentType(ctx) // get content type from request header
+	Product := models.Product{}
+
+	productUUID := ctx.Param("productUUID") // get product uuid from parameter
+	userID := uint(userData["id"].(float64)) // get the userID from decoded jwt
+
+	if contentType == "application/json" {
+		ctx.ShouldBindJSON(&Product)
+	} else {
+		ctx.ShouldBind(&Product)
+	}
+
+	// retreive existing product from database that the uuid same with the param
+	var getProduct models.Product
+	if err := db.Model(&getProduct).Where("uuid = ?", productUUID).First(&getProduct).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H {
+			"error": "Bad request",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// update the product struct with the retreived data
+	Product.ID = uint(getProduct.ID)
+	Product.AdminID = userID
+
+	updateData := models.Product {
+		Name: Product.Name,
+		ImageUrl: Product.ImageUrl,
+	}
+
+	if err := db.Model(&Product).Where("uuid = ?", productUUID).Updates(updateData).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H {
+			"error": "Bad request",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// retreive the updated data
+	var updatedProduct models.Product
+	if err := db.Where("uuid = ?", productUUID).First(&updatedProduct).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H {
+			"error": "Bad request",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// response with json updated data
+	ctx.JSON(http.StatusOK, gin.H {
+		"data": updatedProduct,
+	})
+
+
+
+
+
+
+}

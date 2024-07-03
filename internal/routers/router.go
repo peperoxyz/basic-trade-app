@@ -27,6 +27,7 @@ func StartApp() *gin.Engine {
 		productRouter.Use(middlewares.Authentication()) 
 		productRouter.POST("/", controllers.CreateProduct)
 		productRouter.DELETE("/:productUUID", middlewares.ProductAuthorization(), controllers.DeleteProduct)
+		productRouter.PUT("/:productUUID", middlewares.ProductAuthorization(), controllers.UpdateProduct)
 		
 	}
 
