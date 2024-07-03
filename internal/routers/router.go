@@ -31,9 +31,11 @@ func StartApp() *gin.Engine {
 		productRouter.PUT("/:productUUID", middlewares.ProductAuthorization(), controllers.UpdateProduct)
 		
 		// variant routes
-		productRouter.POST("/variants", middlewares.ProductAuthorization(), controllers.CreateVariant)
 		productRouter.GET("/variants", controllers.GetVariants)
 		productRouter.GET("/variants/:variantUUID", controllers.GetVariant)
+		productRouter.POST("/variants", controllers.CreateVariant)
+		productRouter.PUT("/variants/:variantUUID", controllers.UpdateVariant)
+		productRouter.DELETE("/variants/:variantUUID", controllers.DeleteVariant)
 	}
 	return router
 }
