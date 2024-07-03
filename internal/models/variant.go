@@ -11,9 +11,9 @@ import (
 type Variant struct {
 	ID          uint      `gorm:"primaryKey"`
 	UUID        string    `gorm:"type:varchar(36);uniqueIndex"`
-	VariantName string    `gorm:"type:varchar(100);not null"`
-	Quantity    int       `gorm:"not null"`
-	ProductID   uint      `gorm:"not null"`
+	VariantName string    `gorm:"type:varchar(100);not null" form:"variant_name"`
+	Quantity    int       `gorm:"not null" form:"quantity"`
+	ProductID   uint      `gorm:"not null" form:"product_id"`
 	CreatedAt   time.Time 
 	UpdatedAt   time.Time 
 }
