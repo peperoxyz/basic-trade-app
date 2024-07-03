@@ -191,3 +191,52 @@ func GetProduct(ctx *gin.Context) {
 		"data": Product,
 	})
 }
+
+func CreateVariant(ctx *gin.Context) {
+	db := database.GetDB()
+	contentType := ctx.ContentType()
+
+	Variant := models.Variant{}
+
+	if contentType == "application/json" {
+		ctx.ShouldBindJSON(&Variant)
+	} else {
+		ctx.ShouldBind(&Variant)
+	}
+
+	// get productUUID from form data request body
+	productUUID := ctx.PostForm("product_id")
+	if productUUID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Product UUID is required"})
+		return
+	}
+
+	// get the product ID from the UUID
+	Product := models.Product{}
+	if err := db.Where("uuid = ?", productUUID).First(&Product).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "Product with that UUID not found"})
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": err.Error()})
+		}
+		return
+	}
+
+	// set the product ID and generate a new UUID for the Variant
+	Variant.ProductID = Product.ID
+	Variant.UUID = uuid.New().String()
+
+	// save the Variant to the database
+	err := db.Debug().Create(&Variant).Error
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H {
+			"error": "Bad request",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H {
+		"data": Variant,
+	})
+}
