@@ -22,15 +22,13 @@ func StartApp() *gin.Engine {
 	{
 		// public API
 		productRouter.GET("/", controllers.GetProducts)
+		productRouter.GET("/:productUUID", controllers.GetProduct)
 
 		// set layer authentication jika perlu authentication di request (bearer token)
 		productRouter.Use(middlewares.Authentication()) 
 		productRouter.POST("/", controllers.CreateProduct)
 		productRouter.DELETE("/:productUUID", middlewares.ProductAuthorization(), controllers.DeleteProduct)
 		productRouter.PUT("/:productUUID", middlewares.ProductAuthorization(), controllers.UpdateProduct)
-		
 	}
-
 	return router
-
 }

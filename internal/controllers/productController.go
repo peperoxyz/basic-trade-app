@@ -163,10 +163,31 @@ func UpdateProduct(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H {
 		"data": updatedProduct,
 	})
+}
 
+func GetProduct(ctx *gin.Context) {
+	db := database.GetDB()
+	productUUID := ctx.Param("productUUID")
 
+	// convert uuid from string to uint
+	Product := models.Product{}
+	err := db.Where("UUID = ?", productUUID).First(&Product).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H {
+				"error": "Product with that UUID not found",
+			})
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H {
+				"error": "Internal server error",
+				"message": err.Error(),
+			})
+		}
+		return
+	}
 
-
-
-
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Product retreived successfully",
+		"data": Product,
+	})
 }
