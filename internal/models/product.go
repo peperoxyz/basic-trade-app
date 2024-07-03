@@ -14,7 +14,7 @@ type Product struct {
 	Name      string `gorm:"type:varchar(100);not null" form:"name"`
 	ImageUrl  string `gorm:"type:varchar(255)" form:"imageUrl"`
 	AdminID   uint   `gorm:"not null"` // otomatis foreignKey karena User(Struct di model lain)+ID(PK)
-	Admin     Admin  `gorm:"foreignKey:AdminID"`
+	// Admin     Admin  `gorm:"foreignKey:AdminID"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

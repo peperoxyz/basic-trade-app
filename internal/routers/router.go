@@ -26,6 +26,7 @@ func StartApp() *gin.Engine {
 		// set layer authentication jika perlu authentication di request (bearer token)
 		productRouter.Use(middlewares.Authentication()) 
 		productRouter.POST("/", controllers.CreateProduct)
+		productRouter.DELETE("/:productUUID", controllers.DeleteProduct)
 		
 	}
 
