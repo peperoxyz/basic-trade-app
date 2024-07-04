@@ -56,6 +56,7 @@ func AdminLogin(ctx *gin.Context) {
 
 	password = Admin.Password // inputtan user
 
+	/**
 	// find admin with inputted email
 	err := db.Debug().Where("email = ?", Admin.Email).Take(&Admin).Error
 	if err != nil {
@@ -65,8 +66,20 @@ func AdminLogin(ctx *gin.Context) {
 		})
 		return
 	}
+	*/
 
+	
+	// using preload to load the products were created by admin logged in
+	err := db.Debug().Preload("Products").Where("email = ?", Admin.Email).Take(&Admin).Error
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H {
+			"error": "Unauthorized",
+			"message": "Invalid email",
+		})
+		return
+	}
 
+	
 	// if email found, compare the hashed pass to the inputted pass
 	comparePass := helpers.ComparePass([]byte(Admin.Password), []byte(password))
 	if !comparePass {
@@ -83,6 +96,7 @@ func AdminLogin(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H {
 		"token": token,
 		"message": "Successfully logged in",
+		"data": Admin,
 	})
 
 
