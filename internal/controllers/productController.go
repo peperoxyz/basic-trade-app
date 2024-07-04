@@ -167,18 +167,39 @@ func DeleteProduct(ctx *gin.Context) {
 func UpdateProduct(ctx *gin.Context) {
 	db := database.GetDB()
 
-	userData := ctx.MustGet("userData").(jwt5.MapClaims) // get userData from decoded jwt
-	contentType := helpers.GetContentType(ctx) // get content type from request header
-	Product := models.Product{}
+	// bind req data to productReq struct
+	var productReq requests.ProductRequest
+	if err := ctx.ShouldBind(&productReq); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H {
+			"error": err.Error(),
+		})
+		return
+	}
 
-	productUUID := ctx.Param("productUUID") // get product uuid from parameter
+	// extract filename without extention
+	fileName := helpers.RemoveExtension(productReq.Image.Filename)
+	
+	// upload the file and get the url
+	uploadResult, err := helpers.UploadFile(productReq.Image, fileName)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H {
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// prepare the updated product data
+	Product := models.Product{
+		Name: productReq.Name,
+		ImageUrl: uploadResult,
+	}
+
+	// get the user data from JWT token
+	userData := ctx.MustGet("userData").(jwt5.MapClaims) // get userData from decoded jwt
 	userID := uint(userData["id"].(float64)) // get the userID from decoded jwt
 
-	if contentType == "application/json" {
-		ctx.ShouldBindJSON(&Product)
-	} else {
-		ctx.ShouldBind(&Product)
-	}
+	// get product UUID from parameter
+	productUUID := ctx.Param("productUUID") // get product uuid from parameter
 
 	// retreive existing product from database that the uuid same with the param
 	var getProduct models.Product
