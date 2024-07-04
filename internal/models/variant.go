@@ -13,7 +13,7 @@ type Variant struct {
 	UUID        string    `gorm:"type:varchar(36);uniqueIndex"`
 	VariantName string    `gorm:"type:varchar(100);not null" form:"variant_name"`
 	Quantity    int       `gorm:"not null" form:"quantity"`
-	ProductID   uint      `gorm:"not null" form:"product_id"` // remove the form tag, not needed
+	ProductID   uint      `gorm:"not null"` // remove the form tag, not needed
 	CreatedAt   time.Time 
 	UpdatedAt   time.Time 
 }
