@@ -1,7 +1,6 @@
 package database
 
 import (
-	"basic-trade-app/internal/models"
 	"fmt"
 	"log"
 	"os"
@@ -37,7 +36,7 @@ func StartDB() {
 		fmt.Println("Successfully connected to database")
 	}
 
-	db.Debug().AutoMigrate(models.Admin{}, models.Product{}, models.Variant{})
+	// db.Debug().AutoMigrate(models.Admin{}, models.Product{}, models.Variant{})
 }
 
 // function untuk get connection DB
