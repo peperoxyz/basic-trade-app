@@ -25,7 +25,7 @@ func CreateVariant(ctx *gin.Context) {
 	}
 
 	// get productUUID from form data request body
-	productUUID := ctx.PostForm("product_id")
+	productUUID := ctx.PostForm("product_uuid") 
 	if productUUID == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Product UUID is required"})
 		return
