@@ -6,6 +6,7 @@ import (
 	"basic-trade-app/internal/models"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -61,29 +62,6 @@ func CreateVariant(ctx *gin.Context) {
 	})
 }
 
-/** get all variants without search by name
-
-func GetVariants(ctx *gin.Context) {
-	db := database.GetDB()
-	var Variants []models.Variant
-
-	err := db.Debug().Find(&Variants).Error
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H {
-			"error":   "Internal Server Error",
-			"message": err.Error(),
-		})
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    Variants,
-	})
-}
-
-*/
-
 // get all variants with search by name
 func GetVariants(ctx *gin.Context) {
 	db := database.GetDB()
@@ -91,13 +69,36 @@ func GetVariants(ctx *gin.Context) {
 
 	variantName := ctx.Query("variant_name")
 
+	limitStr := ctx.DefaultQuery("limit", "10")   // limit default 10
+	offsetStr := ctx.DefaultQuery("offset", "0")  // offset default 0
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":   "bad request",
+			"message": "parameter limit tidak valid",
+		})
+		return
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":   "bad request",
+			"message": "parameter offset tidak valid",
+		})
+		return
+	}
+
 	query := db.Debug().Model(&models.Variant{})
 
 	if variantName != "" {
 		query = query.Where("variant_name LIKE ?", "%"+variantName+"%")
 	}
 
-	err := query.Find(&Variants).Error
+	query = query.Limit(limit).Offset(offset)
+
+	err = query.Find(&Variants).Error
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H {
 			"error":   "Internal Server Error",
@@ -106,9 +107,12 @@ func GetVariants(ctx *gin.Context) {
 		return
 	}
 
+	Count := len(Variants)
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    Variants,
+		"count": Count,
 	})
 }
 

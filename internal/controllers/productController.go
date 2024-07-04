@@ -7,51 +7,13 @@ import (
 	"basic-trade-app/internal/models/requests"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	jwt5 "github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
-
-/**
-// create Product without upload image
-func CreateProduct(ctx *gin.Context) {
-	db := database.GetDB()
-
-	// from authentication return
-	userData := ctx.MustGet("userData").(jwt5.MapClaims)
-	contentType := helpers.GetContentType(ctx)
-
-	Product := models.Product{}
-	AdminID := uint(userData["id"].(float64))
-
-	if contentType == "application/json" {
-		ctx.ShouldBindJSON(&Product)
-	} else {
-		ctx.ShouldBind(&Product)
-	}
-
-	Product.AdminID = AdminID
-	newUUID := uuid.New()
-	Product.UUID = newUUID.String()
-
-	// proses upload image
-
-	err := db.Debug().Create(&Product).Error
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H {
-			"error": "Bad request",
-			"message": err.Error(),
-		})
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H {
-		"data": Product,
-	})
-}
-*/
 
 // create Product with upload image
 func CreateProduct(ctx *gin.Context) {
@@ -105,37 +67,35 @@ func CreateProduct(ctx *gin.Context) {
 	})
 }
 
-/** function get products without search by name
-
-func GetProducts(ctx *gin.Context) {
-	db := database.GetDB()
-	var Products []models.Product
-	
-	// Find all products
-	// err := db.Debug().Preload("Admin").Find(&Products).Error
-	err := db.Debug().Find(&Products).Error
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "Internal Server Error",
-			"message": err.Error(),
-		})
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    Products,
-	})
-}
-*/
-
-// function get products with search by name and variant name
+// function get products with search by name and pagination
 func GetProducts(ctx *gin.Context) {
 	db := database.GetDB()
 	var Products []models.Product
 
 	// get query param
 	name := ctx.Query("name")
+
+	limitStr := ctx.DefaultQuery("limit", "10")   // limit default 10
+	offsetStr := ctx.DefaultQuery("offset", "0")  // offset default 0
+
+	// konversi limit dan offset menjadi integer
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":   "bad request",
+			"message": "parameter limit tidak valid",
+		})
+		return
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":   "bad request",
+			"message": "parameter offset tidak valid",
+		})
+		return
+	}
 
 	// prepare query to find products
 	query := db.Debug().Model(&models.Product{})
@@ -148,8 +108,11 @@ func GetProducts(ctx *gin.Context) {
 	// preload variants data
 	query = query.Preload("Variants")
 
+	// terapkan pagination
+	query = query.Limit(limit).Offset(offset)
+
 	// execute query to find the products wanted
-	err := query.Find(&Products).Error
+	err = query.Find(&Products).Error
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H {
 			"error": "Internal server error",
@@ -158,9 +121,12 @@ func GetProducts(ctx *gin.Context) {
 		return
 	}
 	
+	Count := len(Products)
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    Products,
+		"count": Count,
 	})
 }
 
