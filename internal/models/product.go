@@ -15,7 +15,7 @@ type Product struct {
 	ImageUrl  string `gorm:"type:varchar(255)" `
 	AdminID   uint   `gorm:"not null"` // otomatis foreignKey karena User(Struct di model lain)+ID(PK)
 	// Admin     Admin  `gorm:"foreignKey:AdminID"`
-	Variants []Variant
+	Variants []Variant `gorm:"foreignKey:ProductID"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
