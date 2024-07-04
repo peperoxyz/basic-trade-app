@@ -61,6 +61,8 @@ func CreateVariant(ctx *gin.Context) {
 	})
 }
 
+/** get all variants without search by name
+
 func GetVariants(ctx *gin.Context) {
 	db := database.GetDB()
 	var Variants []models.Variant
@@ -79,6 +81,38 @@ func GetVariants(ctx *gin.Context) {
 		"data":    Variants,
 	})
 }
+
+*/
+
+// get all variants with search by name
+func GetVariants(ctx *gin.Context) {
+	db := database.GetDB()
+	var Variants []models.Variant
+
+	variantName := ctx.Query("variant_name")
+
+	query := db.Debug().Model(&models.Variant{})
+
+	if variantName != "" {
+		query = query.Where("variant_name LIKE ?", "%"+variantName+"%")
+	}
+
+	err := query.Find(&Variants).Error
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H {
+			"error":   "Internal Server Error",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    Variants,
+	})
+}
+
+
 
 func GetVariant(ctx *gin.Context) {
 	db := database.GetDB()
