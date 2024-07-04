@@ -17,7 +17,7 @@ func GenerateToken(id uint, uuid string, email string) string {
 		"id": id,
 		"uuid": uuid,
 		"email": email,
-		"exp": time.Now().Add(time.Minute * 10),
+		"exp": time.Now().Add(time.Minute * 72),
 	}
 
 	parseToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
