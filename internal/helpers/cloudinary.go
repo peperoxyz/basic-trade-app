@@ -3,9 +3,12 @@ package helpers
 import (
 	"basic-trade-app/config"
 	"bytes"
+	"errors"
 	"io"
 	"mime/multipart"
 	"path"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/cloudinary/cloudinary-go/v2"
@@ -13,7 +16,38 @@ import (
 	"golang.org/x/net/context"
 )
 
+// define allowed file extensions and max file size to upload
+var allowedFileExt = map[string]bool {
+	".jpg": true,
+	".jpeg": true,
+	".png": true,
+	".svg": true,
+}
+
+const maxFileSize = 5 * 1024 * 1024
+
+func validateFile(fileHeader *multipart.FileHeader) error {
+	// check file zise
+	if fileHeader.Size > maxFileSize {
+		return errors.New("file size could not be more than 5 MB") // still wont show up, given the server error instead when file size more than 5MB
+	}
+
+	// check file extension
+	ext := strings.ToLower(filepath.Ext(fileHeader.Filename))
+	if !allowedFileExt[ext] {
+		return errors.New("file type is not allowed")
+	}
+
+	return nil
+}
+
 func UploadFile(fileHeader *multipart.FileHeader, fileName string) (string, error) {
+	// validate file type and size
+	if err := validateFile(fileHeader)
+	err != nil {
+		return "", err
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -39,8 +73,6 @@ func UploadFile(fileHeader *multipart.FileHeader, fileName string) (string, erro
 	}
 
 	return uploadParam.SecureURL, nil
-
-	
 }
 
 func convertFile(fileHeader *multipart.FileHeader) (*bytes.Reader, error) {
