@@ -4,6 +4,7 @@ import (
 	"basic-trade-app/internal/database"
 	"basic-trade-app/internal/helpers"
 	"basic-trade-app/internal/models"
+	"basic-trade-app/internal/models/requests"
 	"errors"
 	"net/http"
 
@@ -13,9 +14,11 @@ import (
 	"gorm.io/gorm"
 )
 
+/**
+// create Product without upload image
 func CreateProduct(ctx *gin.Context) {
 	db := database.GetDB()
-	
+
 	// from authentication return
 	userData := ctx.MustGet("userData").(jwt5.MapClaims)
 	contentType := helpers.GetContentType(ctx)
@@ -33,7 +36,62 @@ func CreateProduct(ctx *gin.Context) {
 	newUUID := uuid.New()
 	Product.UUID = newUUID.String()
 
+	// proses upload image
+
 	err := db.Debug().Create(&Product).Error
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H {
+			"error": "Bad request",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H {
+		"data": Product,
+	})
+}
+*/
+
+// create Product with upload image
+func CreateProduct(ctx *gin.Context) {
+	db := database.GetDB()
+
+	var productReq requests.ProductRequest
+	if err := ctx.ShouldBind(&productReq); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H {
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// extract filename without extention
+	fileName := helpers.RemoveExtension(productReq.Image.Filename)
+
+	uploadResult, err := helpers.UploadFile(productReq.Image, fileName)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H {
+			"error": err.Error(),
+		})
+		return
+	}
+	
+	Product := models.Product{
+		Name: productReq.Name,
+		ImageUrl: uploadResult,
+	}
+
+	// from authentication return
+	userData := ctx.MustGet("userData").(jwt5.MapClaims)
+	AdminID := uint(userData["id"].(float64))
+
+
+	Product.AdminID = AdminID
+	newUUID := uuid.New()
+	Product.UUID = newUUID.String()
+
+	// proses upload image
+	err = db.Debug().Create(&Product).Error
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H {
 			"error": "Bad request",
