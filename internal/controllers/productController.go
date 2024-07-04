@@ -105,9 +105,10 @@ func CreateProduct(ctx *gin.Context) {
 	})
 }
 
+/** function get products without search by name
+
 func GetProducts(ctx *gin.Context) {
 	db := database.GetDB()
-	// Products := models.Product{}
 	var Products []models.Product
 	
 	// Find all products
@@ -121,6 +122,48 @@ func GetProducts(ctx *gin.Context) {
 		return
 	}
 
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    Products,
+	})
+}
+*/
+
+// function get products with search by name and variant name
+func GetProducts(ctx *gin.Context) {
+	db := database.GetDB()
+	var Products []models.Product
+
+	// get query param
+	name := ctx.Query("name")
+	variantName := ctx.Query("variant_name")
+
+	// prepare query to find products
+	query := db.Debug().Model(&models.Product{})
+
+	// apply name filter if name parameter is exist
+	if name != "" {
+		query = query.Where("name LIKE ?", "%"+name+"%")
+	}
+
+	// if variant name value is exist, join with variants table and return the wanted products
+	if variantName != "" {
+		query = query.Joins("JOIN variants ON products.id = variants.product_id").Where("variants.variant_name LIKE ?", "%"+variantName+"%")
+	}
+
+	// preload variants data
+	query = query.Preload("Variants")
+
+	// execute query to find the products wanted
+	err := query.Find(&Products).Error
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H {
+			"error": "Internal server error",
+			"message": err.Error(),
+		})
+		return
+	}
+	
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    Products,
