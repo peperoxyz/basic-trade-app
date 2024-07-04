@@ -136,7 +136,6 @@ func GetProducts(ctx *gin.Context) {
 
 	// get query param
 	name := ctx.Query("name")
-	variantName := ctx.Query("variant_name")
 
 	// prepare query to find products
 	query := db.Debug().Model(&models.Product{})
@@ -144,11 +143,6 @@ func GetProducts(ctx *gin.Context) {
 	// apply name filter if name parameter is exist
 	if name != "" {
 		query = query.Where("name LIKE ?", "%"+name+"%")
-	}
-
-	// if variant name value is exist, join with variants table and return the wanted products
-	if variantName != "" {
-		query = query.Joins("JOIN variants ON products.id = variants.product_id").Where("variants.variant_name LIKE ?", "%"+variantName+"%")
 	}
 
 	// preload variants data
