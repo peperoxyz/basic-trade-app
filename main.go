@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	PORT = "7070"
+	PORT = ":7070"
 )
 
 func main() {
