@@ -24,6 +24,7 @@ func StartApp() *gin.Engine {
 		productRouter.GET("/", controllers.GetProducts)
 		productRouter.GET("/:productUUID", controllers.GetProduct)
 		productRouter.GET("/variants", controllers.GetVariants)
+		productRouter.GET("/variants/:variantUUID", controllers.GetVariant)
 
 		// set layer authentication jika perlu authentication di request (bearer token)
 		productRouter.Use(middlewares.Authentication()) 
@@ -32,7 +33,6 @@ func StartApp() *gin.Engine {
 		productRouter.PUT("/:productUUID", middlewares.ProductAuthorization(), controllers.UpdateProduct)
 		
 		// variant routes
-		productRouter.GET("/variants/:variantUUID", controllers.GetVariant)
 		productRouter.POST("/variants", middlewares.VariantAuthorization(), controllers.CreateVariant)
 		productRouter.PUT("/variants/:variantUUID", middlewares.VariantAuthorization(), controllers.UpdateVariant)
 		productRouter.DELETE("/variants/:variantUUID", middlewares.VariantAuthorization(), controllers.DeleteVariant)
