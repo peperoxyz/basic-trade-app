@@ -1,0 +1,505 @@
+{
+	"info": {
+		"_postman_id": "16faa299-c838-4c45-8458-ef735016eecb",
+		"name": "Base Trade API - Dea Ananda Gunawan",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "22314754"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "email",
+									"value": "adil@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "name",
+									"value": "Adil Gunawan",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "allahuakbar1",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{baseUrl}}/auth/register"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parsing the response JSON\r",
+									"var response = pm.response.json();\r",
+									"\r",
+									"// Menetapkan variabel token dengan nilai dari respons API\r",
+									"pm.collectionVariables.set(\"token\", response.token);\r",
+									"\r",
+									"// Jika menggunakan environment, gunakan baris ini:\r",
+									"// pm.environment.set(\"token\", response.token);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "email",
+									"value": "adil@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "allahuakbar1",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{baseUrl}}/auth/login"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Variants",
+					"item": [
+						{
+							"name": "Get All",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/products/variants",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"products",
+										"variants"
+									],
+									"query": [
+										{
+											"key": "variant_name",
+											"value": "psikologi",
+											"disabled": true
+										},
+										{
+											"key": "limit",
+											"value": "2",
+											"disabled": true
+										},
+										{
+											"key": "offset",
+											"value": "0",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get by UUID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/products/variants/:variantUUID",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"products",
+										"variants",
+										":variantUUID"
+									],
+									"variable": [
+										{
+											"key": "variantUUID",
+											"value": "c2ef0da1-c44f-4103-92cd-ffac628371b6"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "variant_name",
+											"value": "Buku Psikologi Klinis Dea",
+											"type": "text"
+										},
+										{
+											"key": "quantity",
+											"value": "240",
+											"type": "text"
+										},
+										{
+											"key": "product_uuid",
+											"value": "1304c8f6-6279-4b39-acf1-8f6f11dc9f99",
+											"description": "uuid of product",
+											"type": "text"
+										}
+									]
+								},
+								"url": "{{baseUrl}}/products/variants"
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "variant_name",
+											"value": "Buku Pelajaran",
+											"description": "string",
+											"type": "text"
+										},
+										{
+											"key": "quantity",
+											"value": "19",
+											"description": "integer",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/products/variants/:variantUUID",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"products",
+										"variants",
+										":variantUUID"
+									],
+									"variable": [
+										{
+											"key": "variantUUID",
+											"value": "6069c96d-6568-4473-a912-f1d18a711e89"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/products/variants/:variantUUID",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"products",
+										"variants",
+										":variantUUID"
+									],
+									"query": [
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "variantUUID",
+											"value": "bd978d87-8b1f-419e-8906-227daa5c7ccd"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Get All",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "offset",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "tes",
+									"description": "search by name",
+									"disabled": true
+								},
+								{
+									"key": "name",
+									"value": "teknik",
+									"disabled": true
+								},
+								{
+									"key": "variant_name",
+									"value": "pelajaran",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get by UUID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/products/:uuid",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								":uuid"
+							],
+							"variable": [
+								{
+									"key": "uuid",
+									"value": "810de232-ece7-42e3-b245-e7f4b0ad36e4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Buku",
+									"type": "text"
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/MSI 14/Documents/bookland_buku/buku-standar-pengelasan.jpg"
+								}
+							]
+						},
+						"url": "{{baseUrl}}/products"
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Updated Name",
+									"type": "text"
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/MSI 14/Documents/bookland_buku/buku-standar-pengelasan.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/products/:productUUID",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								":productUUID"
+							],
+							"variable": [
+								{
+									"key": "productUUID",
+									"value": "4fbf1cd8-2ad9-49df-b029-23d65ca306de"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/products/:productUUID",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								":productUUID"
+							],
+							"variable": [
+								{
+									"key": "productUUID",
+									"value": "4fbf1cd8-2ad9-49df-b029-23d65ca306de"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": {
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImRlYWFuYW5kYWd1bmF3YW5AZ21haWwuY29tIiwiZXhwIjoiMjAyNC0wNy0wNFQxNjozNzoyNy40Mjc4OTA4KzA3OjAwIiwiaWQiOjExLCJ1dWlkIjoiNmYyNzE4NjItYmI2Mi00OWI3LTg3YjYtZGJkNDFiY2E2ZDZmIn0.-YnB2jPiDrUfOSfMNmRCIdlrDn7nOz1P0XJ3PQm44wA"
+		}
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://basic-trade-app-production.up.railway.app",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "{{token}}",
+			"type": "string"
+		}
+	]
+}
