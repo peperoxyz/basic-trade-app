@@ -4,11 +4,10 @@ import (
 	"basic-trade-app/config"
 	"basic-trade-app/internal/database"
 	router "basic-trade-app/internal/routers"
-	"os"
 )
 
 var (
-	PORT = ":" + os.Getenv("PORT")
+	PORT = "7070"
 )
 
 func main() {
