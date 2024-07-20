@@ -69,66 +69,94 @@ func CreateProduct(ctx *gin.Context) {
 
 // function get products with search by name and pagination
 func GetProducts(ctx *gin.Context) {
-	db := database.GetDB()
-	var Products []models.Product
+    db := database.GetDB()
+    var Products []models.Product
 
-	// get query param
-	name := ctx.Query("name")
+    // get query param
+    name := ctx.Query("name")
 
-	limitStr := ctx.DefaultQuery("limit", "10")   // limit default 10
-	offsetStr := ctx.DefaultQuery("offset", "0")  // offset default 0
+    limitStr := ctx.DefaultQuery("limit", "0")   // limit default 10
+    offsetStr := ctx.DefaultQuery("offset", "0")  // offset default 0
 
-	// konversi limit dan offset menjadi integer
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error":   "bad request",
-			"message": "parameter limit tidak valid",
-		})
-		return
-	}
+    // konversi limit dan offset menjadi integer
+    limit, err := strconv.Atoi(limitStr)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error":   "bad request",
+            "message": "parameter limit tidak valid",
+        })
+        return
+    }
 
-	offset, err := strconv.Atoi(offsetStr)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error":   "bad request",
-			"message": "parameter offset tidak valid",
-		})
-		return
-	}
+    offset, err := strconv.Atoi(offsetStr)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error":   "bad request",
+            "message": "parameter offset tidak valid",
+        })
+        return
+    }
 
-	// prepare query to find products
-	query := db.Debug().Model(&models.Product{})
+    // prepare query to find products
+    query := db.Debug().Model(&models.Product{})
 
-	// apply name filter if name parameter is exist
-	if name != "" {
-		query = query.Where("name LIKE ?", "%"+name+"%")
-	}
+    // apply name filter if name parameter is exist
+    if name != "" {
+        query = query.Where("name LIKE ?", "%"+name+"%")
+    }
 
-	// preload variants data
-	query = query.Preload("Variants")
+    // preload variants data
+    query = query.Preload("Variants")
 
-	// terapkan pagination
-	query = query.Limit(limit).Offset(offset)
+    // get the total count of products for pagination
+    var totalCount int64
+    query.Count(&totalCount)
 
-	// execute query to find the products wanted
-	err = query.Find(&Products).Error
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H {
-			"error": "Internal server error",
-			"message": err.Error(),
-		})
-		return
-	}
-	
-	Count := len(Products)
+    // apply pagination only if limit is greater than 0
+    if limit > 0 {
+        query = query.Limit(limit).Offset(offset * limit)
+    }
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    Products,
-		"count": Count,
-	})
+    // execute query to find the products wanted
+    err = query.Find(&Products).Error
+    if err != nil {
+        ctx.JSON(http.StatusInternalServerError, gin.H{
+            "error": "Internal server error",
+            "message": err.Error(),
+        })
+        return
+    }
+
+    // calculate total pages
+    totalPages := 0
+    if limit > 0 {
+        totalPages = int(totalCount) / limit
+        if int(totalCount)%limit != 0 {
+            totalPages++
+        }
+    }
+
+    // calculate current page
+    currentPage := 1
+    if limit > 0 {
+        currentPage = offset + 1
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "count":   len(Products),
+        "data":    Products,
+        "total":   totalCount,
+        "meta": gin.H{
+            "current_page": currentPage,
+            "total_pages":  totalPages,
+            "limit":        limit,
+            "offset":       offset,
+        },
+        "success": true,
+		"message": "Products retreived successfully",
+    })
 }
+
 
 func DeleteProduct(ctx *gin.Context) {
 	db := database.GetDB()
@@ -163,7 +191,6 @@ func DeleteProduct(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Product deleted successfully",
-		"data": Product,
 	})
 }
 

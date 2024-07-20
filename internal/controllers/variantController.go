@@ -67,11 +67,13 @@ func GetVariants(ctx *gin.Context) {
 	db := database.GetDB()
 	var Variants []models.Variant
 
+    // get query param
 	variantName := ctx.Query("variant_name")
 
-	limitStr := ctx.DefaultQuery("limit", "10")   // limit default 10
+	limitStr := ctx.DefaultQuery("limit", "0")   // limit default 10
 	offsetStr := ctx.DefaultQuery("offset", "0")  // offset default 0
 
+    // konversi limit dan offset menjadi integer
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -90,13 +92,22 @@ func GetVariants(ctx *gin.Context) {
 		return
 	}
 
+    // prepare query to find variants
 	query := db.Debug().Model(&models.Variant{})
 
+    // apply name filter if name parameter is exist
 	if variantName != "" {
 		query = query.Where("variant_name LIKE ?", "%"+variantName+"%")
 	}
 
-	query = query.Limit(limit).Offset(offset)
+    // get the total count of products for pagination
+    var totalCount int64
+    query.Count(&totalCount)
+
+    // apply pagination only if limit is greater than 0
+    if limit > 0 {
+        query = query.Limit(limit).Offset(offset * limit)
+    }
 
 	err = query.Find(&Variants).Error
 	if err != nil {
@@ -107,13 +118,34 @@ func GetVariants(ctx *gin.Context) {
 		return
 	}
 
-	Count := len(Variants)
+   // calculate total pages
+    totalPages := 0
+    if limit > 0 {
+        totalPages = int(totalCount) / limit
+        if int(totalCount)%limit != 0 {
+            totalPages++
+        }
+    }
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    Variants,
-		"count": Count,
-	})
+    // calculate current page
+    currentPage := 1
+    if limit > 0 {
+        currentPage = offset + 1
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "count":   len(Variants),
+        "data":    Variants,
+        "total":   totalCount,
+        "meta": gin.H{
+            "current_page": currentPage,
+            "total_pages":  totalPages,
+            "limit":        limit,
+            "offset":       offset,
+        },
+        "success": true,
+		"message": "Variants retreived successfully",
+    })
 }
 
 
@@ -231,6 +263,5 @@ func DeleteVariant(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Variant deleted successfully",
-		"data": Variant,
 	})
 }
